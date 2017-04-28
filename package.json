@@ -1,0 +1,24 @@
+{
+  "name": "vue-box",
+  "version": "1.0.0",
+  "description": "A Small module that pull vue components into a simple testable environment for methods, computed props, and watched functionality",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://dhershman@bitbucket.org/dhershman/vue-box.git"
+  },
+  "keywords": [
+    "vue",
+    "testing",
+    "unit",
+    "tests",
+    "vue-box",
+    "components"
+  ],
+  "author": "Dustin Hershman",
+  "license": "MIT",
+  "homepage": "https://bitbucket.org/dhershman/vue-box#readme"
+}
