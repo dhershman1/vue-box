@@ -8,8 +8,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://dhershman@bitbucket.org/dhershman/vue-box.git"
+    "url": "https://github.com/dhershman1/vue-box.git"
   },
+	"bugs": {
+		"url": "https://github.com/dhershman1/vue-box/issues"
+	},
   "keywords": [
     "vue",
     "testing",
@@ -20,5 +23,5 @@
   ],
   "author": "Dustin Hershman",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/dhershman/vue-box#readme"
+  "homepage": "https://github.com/dhershman1/vue-box#readme"
 }
