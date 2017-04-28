@@ -1,6 +1,8 @@
 # Vue Box
 Pulls in single Vue component files and allows you to isolate the JS of your vue to perform tests on your functionality, gives you the entire object (it will automatically exclude other components being set/used)
 
+Please report any issues as soon as you can, I am one man and cannot test every need, or situation thank you!
+
 ### Arguments
 Vue Box takes two arguments:
 
