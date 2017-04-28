@@ -1,6 +1,6 @@
 {
   "name": "vue-box",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Small module that pull vue components into a simple testable environment for methods, computed props, and watched functionality",
   "main": "index.js",
   "scripts": {
@@ -10,9 +10,9 @@
     "type": "git",
     "url": "https://github.com/dhershman1/vue-box.git"
   },
-	"bugs": {
-		"url": "https://github.com/dhershman1/vue-box/issues"
-	},
+  "bugs": {
+    "url": "https://github.com/dhershman1/vue-box/issues"
+  },
   "keywords": [
     "vue",
     "testing",
