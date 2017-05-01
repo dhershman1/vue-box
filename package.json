@@ -1,6 +1,6 @@
 {
   "name": "vue-box",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A Small module that pull vue components into a simple testable environment for methods, computed props, and watched functionality",
   "main": "index.js",
   "scripts": {
