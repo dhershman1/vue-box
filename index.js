@@ -12,12 +12,30 @@ module.exports = (vuePath, options) => {
 	const opts = Object.assign({}, defaults, options);
 	const dirs = fs.readdirSync(vuePath);
 
+	function fixEnding(string) {
+		let i = string.length;
+		let fixedStr = string;
+
+		for (i; i > 0; i--) {
+			if (string[i] === ';' || string[i] === '}') {
+				if (string[i] === ';') {
+					let tmp = string.length - i;
+					fixedStr = string.slice(0, -tmp);
+				}
+				break;
+			}
+		}
+
+		return fixedStr;
+	}
+
 	dirs.forEach((item) => {
 		if (path.extname(item) === '.vue') {
 			vueString = fs.readFileSync(path.join(vuePath, item), 'utf-8');
-			script = vueString.split(/\.?export\s?[a-z]+\s/g)[1].split('</script>')[0].slice(0, -2);
+			script = fixEnding(vueString.split(/\.?export\s?[a-z]+\s/g)[1].split('</script>')[0]);
 		}
 	});
+
 
 	function findLocalModule(loc) {
 		const parsedLoc = path.parse(loc);
@@ -138,12 +156,17 @@ module.exports = (vuePath, options) => {
 				return self;
 			}
 
+			function setThis(arg) {
+				self = arg;
+			}
+
 			function getVueExport() {
 				return eval(`(${mainStr})`);
 			}
 
 			return {
 				getVueExport,
+				setThis,
 				getThis
 			};
 		};
