@@ -3,6 +3,14 @@ Pulls in single Vue component files and allows you to isolate the JS of your vue
 
 Please report any issues as soon as you can, I am one man and cannot test every need, or situation thank you!
 
+### Changelog
+> v1.0.1
+> - Stabilized how the ending bracket could break the process, depending on if you used a semi colon or not
+> - Added in tests now so you can see the module in action and see how it runs in your test files
+> - Added `setThis` method to allow the user to set the this scope later if they want to call their data method
+> - Some more stabilization fixes
+
+
 ### Arguments
 Vue Box takes two arguments:
 
@@ -43,6 +51,13 @@ const instance = myComponent({
 Returns the vue this scope current to the instance, useful for checking or faking data needed in methods.
 ```js
 const vueThis = instance.getThis();
+```
+
+#### setThis()
+Sets the this scope of your vue object to whatever argument you send. (you can also just send an object as shown above)
+```js
+// We can call the data function inside our vue object to get your data back that you set there
+instance.setThis(instance.getVueExport().data());
 ```
 
 #### getVueExport()
