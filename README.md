@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/dhershman1/vue-box.svg?branch=master)](https://travis-ci.org/dhershman1/vue-box)
 # Vue Box
 Pulls in single Vue component files and allows you to isolate the JS of your vue to perform tests on your functionality, gives you the entire object (it will automatically exclude other components being set/used)
 
