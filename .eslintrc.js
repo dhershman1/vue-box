@@ -1,11 +1,12 @@
 module.exports = {
 	'parserOptions': {
+		'ecmaVersion': 6,
 		'sourceType': 'module'
 	},
 	'env': {
 		'browser': true,
 		'node': true,
-		'es6': false
+		'es6': true
 	},
 	'rules': {
 		// Possible Errors
@@ -67,7 +68,7 @@ module.exports = {
 		'no-empty-function': 'error',
 		'no-empty-pattern': 'error',
 		'no-eq-null': 'error',
-		'no-eval': 'error',
+		'no-eval': 'off',
 		'no-extend-native': 'error',
 		'no-extra-bind': 'error',
 		'no-extra-label': 'error',
@@ -85,7 +86,7 @@ module.exports = {
 		'no-magic-numbers': 'off',
 		'no-multi-spaces': 'error',
 		'no-multi-str': 'error',
-		'no-new-func': 'error',
+		'no-new-func': 'off',
 		'no-new-wrappers': 'error',
 		'no-new': 'error',
 		'no-octal-escape': 'error',
@@ -134,7 +135,7 @@ module.exports = {
 		'no-use-before-define': 'error',
 		// Node.js and CommonJS
 		'callback-return': 'error',
-		'global-require': 'error',
+		'global-require': 'off',
 		'handle-callback-err': 'error',
 		'no-mixed-requires': 'error',
 		'no-new-require': 'off',

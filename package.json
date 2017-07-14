@@ -4,6 +4,8 @@
   "description": "A Small module that pull vue components into a simple testable environment for methods, computed props, and watched functionality",
   "main": "index.js",
   "scripts": {
+    "test:multi": "tape tests/component-import/tests/test.js | tap-spec",
+    "test:single": "tape tests/single-component/tests/test.js | tap-spec",
     "test": "tape 'tests/**/test.js' | tap-spec"
   },
   "repository": {
@@ -28,5 +30,9 @@
     "tap-spec": "^4.1.1",
     "tape": "^4.6.3",
     "underscore": "^1.8.3"
+  },
+  "dependencies": {
+    "rollup": "^0.45.2",
+    "rollup-plugin-multi-entry": "^2.0.1"
   }
 }

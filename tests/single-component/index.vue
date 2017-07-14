@@ -10,7 +10,8 @@
 	export default {
 		data() {
 			return {
-				aTest: 'CoolData'
+				aTest: 'CoolData',
+				bTest: ''
 			};
 		},
 		computed: {
@@ -19,7 +20,24 @@
 			},
 			changeComputed() {
 				this.aTest = 'Chicken';
+
 				return this.aTest;
+			},
+			testIf() {
+				if (this.aTest) {
+					return 'All good';
+				}
+
+				return 'Not Good';
+			},
+			testIfElse() {
+				if (this.aTest) {
+					this.bTest = 'Panda';
+				} else {
+					this.bTest = 'Polar Bear';
+				}
+
+				return this.bTest;
 			}
 		},
 		methods: {
