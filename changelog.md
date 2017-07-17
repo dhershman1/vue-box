@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.0
+
+> - Can now support importing of components into your main vue file
+> - Added some additions to how files are sanatized
+>   - These may need to be made stricter will find out with time
+> - Recusively tries to find your vue components and bring them into the main js file
+
 ## v1.1.0
 
 > - Complete redo of the main app

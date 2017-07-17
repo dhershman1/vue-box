@@ -1,7 +1,6 @@
 const path = require('path');
 const fs = require('fs');
 const rollup = require('rollup').rollup;
-const multiEntry = require('rollup-plugin-multi-entry');
 
 module.exports = (options) => {
 	const defaults = {
@@ -26,29 +25,45 @@ module.exports = (options) => {
 			resolve(bundle.write({
 				dest: currPath,
 				format: 'cjs',
+				moduleName: opts.testName.replace(/\W\s/g, ''),
 				globals: opts.globals
 			}));
 		});
 	};
 
+	const replaceImport = (script, name) => {
+		const varReg = /(?!import)\s([A-Z][0-9]?)+\s(?=from)/i;
+		const importReg = /import\s([A-Z][0-9]?)+\sfrom\s(.)+\.vue'?;?/i;
+		const varName = script.match(varReg)[0];
+
+		return script.replace(importReg, `var ${varName.replace(/\W\s?/g, '')} = ${name.replace(/\W\s?/g, '')}`);
+	};
+
 	const importComp = (script) => {
 		const reg = /(\w\d?[-_\s]?)+\/(\w\d?[-_\s]?)+\.vue/ig;
-		const compList = script.replace(reg, '').split(/\n\r|\n/g);
-		let componentPaths = [];
+		const compList = script.match(reg, '');
+		let fullScript = '';
+		let origScript = script;
 
-		componentPaths = compList.map(comp => {
-			const [name, fileName] = comp;
+		compList.forEach(comp => {
+			const [name, fileName] = comp.split('/');
 			const pathOpt = path.resolve(opts.componentPath, name, fileName);
-			const scriptString = cleanFile(fs.readFileSync(pathOpt, 'utf-8'));
+			const compString = cleanFile(fs.readFileSync(pathOpt, 'utf-8'));
+			const cleanCompString = compString.replace('default', `var ${name.replace(/\W\s?/g, '')} = `);
 
-			if (scriptString.includes('.vue')) {
-				return importComp(scriptString);
+			if (compString.includes('.vue')) {
+				return importComp(cleanCompString);
 			}
 
-			return pathOpt;
+			origScript = replaceImport(origScript, name);
+			fullScript += cleanCompString;
+
+			return fullScript;
 		});
 
-		return componentPaths;
+		fullScript += origScript;
+
+		return fullScript;
 	};
 
 	const vueBox = () => {
@@ -56,21 +71,20 @@ module.exports = (options) => {
 			const pathOpt = path.resolve(opts.vuePath);
 			const scriptString = cleanFile(fs.readFileSync(pathOpt, 'utf-8'));
 			const currPath = path.join(pathOpt.replace(/\/(\w\d?[-_\s]?)+\.vue/ig, ''), opts.outputDir, `${opts.testName}.js`);
-			let componentPaths = '';
+			let bundleScript = '';
 
 			if (!scriptString) {
 				reject(new Error('No Vue file given'));
 			}
 			if (scriptString.includes('.vue')) {
-				componentPaths += importComp(scriptString);
+				bundleScript = importComp(scriptString);
+			} else {
+				bundleScript = scriptString;
 			}
 
-
-			fs.writeFileSync(currPath, scriptString, 'utf-8');
+			fs.writeFileSync(currPath, bundleScript);
 			rollup({
-				entry: {
-					include: currPath
-				},
+				entry: currPath,
 				external: opts.externals
 			}).then(bundle => {
 				writeBundle(bundle, currPath).then(() => {

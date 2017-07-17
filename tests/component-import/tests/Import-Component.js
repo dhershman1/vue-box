@@ -1,10 +1,12 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var _ = _interopDefault(require('underscore'));
 
-var SingleComponent = {
+var singlecomponent =  {
 		data() {
 			return {
 				aTest: 'CoolData',
@@ -47,4 +49,35 @@ var SingleComponent = {
 		}
 	};
 
-module.exports = SingleComponent;
+
+
+
+	var testComponent = singlecomponent;
+
+	var ImportComponent = {
+		data() {
+			return {
+				aTest: 'CoolData'
+			};
+		},
+		computed: {
+			testComputed() {
+				return this.aTest;
+			},
+			changeComputed() {
+				this.aTest = 'Chicken';
+				return this.aTest;
+			},
+			testedImport() {
+				return testComponent.data();
+			}
+		},
+		methods: {
+			importTesting: function(param) {
+				return 'Testing imports';
+			}
+		}
+	};
+
+exports.singlecomponent = singlecomponent;
+exports['default'] = ImportComponent;

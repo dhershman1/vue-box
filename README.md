@@ -26,13 +26,42 @@ const defaults = {
 ```
 
 ### How To
-Simply pass in the string of the .vue file and the module will do the rest
+Pass in a set of options to vueBox and go from there
 
-The module will automatically grab dependencies your component needs based on its imports/requires, you can set blacklisted names in order to skip certain imports (such as other components)
+For single vue files (not importing other vue components)
 
 ```js
 const vueBox = require('vue-box');
-const myComponent = vueBox(options).then(vm => {
-	// vm will be for Vue object that contains all of your data and functions
+vueBox({
+	vuePath: `${__dirname}/../index.vue`,
+	outputDir: 'tests',
+	testName: 'Single-Component',
+	externals: ['underscore'],
+	globals: {
+		underscore: '_'
+	}
+}).then(vm => {
+	// You can now access your vue object here
+});
+```
+
+For a vue file that is importing other vue components
+
+```js
+const vueBox = require('vue-box');
+vueBox({
+	vuePath: `${__dirname}/../index.vue`,
+	outputDir: 'tests',
+	testName: 'Import-Component',
+	componentPath: `${__dirname}/../../`, // Note a path that points to the general components directory
+	externals: ['underscore'], // General rollup settings
+	globals: { // More general rollup settings
+		underscore: '_'
+	}
+}).then(vm => {
+	// You can now access your vue object here
+	// Your main vue file will be under default so:
+	vm.default.data() // etc...
+	// You can also look at other components if you need too through the vm variabel
 });
 ```
