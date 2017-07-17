@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.1
+
+> - Removed an unused dependency
+> - Version bump
+
 ## v1.2.0
 
 > - Can now support importing of components into your main vue file
