@@ -1,13 +1,10 @@
-<template>
-	<div>
-		<p>Test Elements</p>
-	</div>
-</template>
+'use strict';
 
-<script>
-	import _ from 'underscore';
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-	export default {
+var _ = _interopDefault(require('underscore'));
+
+var SingleComponent = {
 		data() {
 			return {
 				aTest: 'CoolData',
@@ -49,4 +46,5 @@
 			}
 		}
 	};
-</script>
+
+module.exports = SingleComponent;

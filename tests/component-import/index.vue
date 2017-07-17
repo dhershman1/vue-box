@@ -20,6 +20,9 @@
 			changeComputed() {
 				this.aTest = 'Chicken';
 				return this.aTest;
+			},
+			testedImport() {
+				return testComponent.data();
 			}
 		},
 		methods: {

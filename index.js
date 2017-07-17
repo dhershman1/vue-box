@@ -1,178 +1,99 @@
 const path = require('path');
 const fs = require('fs');
+const rollup = require('rollup').rollup;
 
-module.exports = (vuePath, options) => {
-	let script = '';
-	let vueString = '';
+module.exports = (options) => {
 	const defaults = {
-		blacklistNames: [],
-		localModuleAlias: '',
-		localPath: ''
+		vuePath: '/',
+		componentPath: '/',
+		testName: 'default',
+		outputDir: 'tests',
+		externals: [],
+		globals: {}
 	};
 	const opts = Object.assign({}, defaults, options);
-	const dirs = fs.readdirSync(vuePath);
 
-	function fixEnding(string) {
-		let i = string.length;
-		let fixedStr = string;
+	const cleanFile = (fileString) => {
+		const templateRegex = /<template>(.|\n)*?<\/template>/g;
+		const scriptTagsRegex = /<script>|<\/script>/g;
 
-		for (i; i > 0; i--) {
-			if (string[i] === ';' || string[i] === '}') {
-				if (string[i] === ';') {
-					let tmp = string.length - i;
-					fixedStr = string.slice(0, -tmp);
-				}
-				break;
-			}
-		}
+		return fileString.replace(templateRegex, '').replace(scriptTagsRegex, '');
+	};
 
-		return fixedStr;
-	}
+	const writeBundle = (bundle, currPath) => {
+		return new Promise((resolve) => {
+			resolve(bundle.write({
+				dest: currPath,
+				format: 'cjs',
+				moduleName: opts.testName.replace(/\W\s/g, ''),
+				globals: opts.globals
+			}));
+		});
+	};
 
-	dirs.forEach((item) => {
-		if (path.extname(item) === '.vue') {
-			vueString = fs.readFileSync(path.join(vuePath, item), 'utf-8');
-			script = fixEnding(vueString.split(/\.?export\s?[a-z]+\s/g)[1].split('</script>')[0]);
-		}
-	});
+	const replaceImport = (script, name) => {
+		const varReg = /(?!import)\s([A-Z][0-9]?)+\s(?=from)/i;
+		const importReg = /import\s([A-Z][0-9]?)+\sfrom\s(.)+\.vue'?;?/i;
+		const varName = script.match(varReg)[0];
 
+		return script.replace(importReg, `var ${varName.replace(/\W\s?/g, '')} = ${name.replace(/\W\s?/g, '')}`);
+	};
 
-	function findLocalModule(loc) {
-		const parsedLoc = path.parse(loc);
-		const dirName = parsedLoc.dir.split(opts.localModuleAlias).pop();
+	const importComp = (script) => {
+		const reg = /(\w\d?[-_\s]?)+\/(\w\d?[-_\s]?)+\.vue/ig;
+		const compList = script.match(reg, '');
+		let fullScript = '';
+		let origScript = script;
 
-		return path.join(process.cwd(), opts.localPath, dirName, parsedLoc.name);
-	}
+		compList.forEach(comp => {
+			const [name, fileName] = comp.split('/');
+			const pathOpt = path.resolve(opts.componentPath, name, fileName);
+			const compString = cleanFile(fs.readFileSync(pathOpt, 'utf-8'));
+			const cleanCompString = compString.replace('default', `var ${name.replace(/\W\s?/g, '')} = `);
 
-	function notBlackListed(str) {
-		const len = opts.blacklistNames.length;
-		let i = 0;
-		let notListed = false;
-
-		for (i; i < len; i++) {
-			notListed = str.indexOf(opts.blacklistNames[i]) === -1;
-		}
-
-		return notListed;
-	}
-
-	// Break down require strings and insert them into our components
-	function cleanRequires(moduleItem) {
-		let moduleStr = moduleItem.split(/(var|const|let)/gi)[2];
-		let moduleName = moduleStr.split('=')[0].trim();
-		let moduleValue = moduleStr.match(/('|")(\w*|\w+\W\w+)('|")/gi)[0].replace(/('|")/g, '');
-
-		if (notBlackListed(moduleName) && notBlackListed(moduleValue)) {
-			if (opts.localModuleAlias && moduleValue.includes(opts.localModuleAlias)) {
-				moduleValue = findLocalModule(moduleValue);
+			if (compString.includes('.vue')) {
+				return importComp(cleanCompString);
 			}
 
-			return {
-				moduleName,
-				moduleValue
-			};
-		}
+			origScript = replaceImport(origScript, name);
+			fullScript += cleanCompString;
 
-		return null;
-	}
+			return fullScript;
+		});
 
-	// Break down import strings and insert them to our components
-	function cleanImport(moduleItem) {
-		let moduleArr = moduleItem.split('import')[1].split('from');
-		let moduleName = moduleArr[0].trim();
-		let moduleValue = moduleArr[1].trim().replace(/('|")/g, '');
+		fullScript += origScript;
 
-		if (notBlackListed(moduleName) && notBlackListed(moduleValue)) {
-			if (opts.localModuleAlias && moduleValue.includes(opts.localModuleAlias)) {
-				moduleValue = findLocalModule(moduleValue);
+		return fullScript;
+	};
+
+	const vueBox = () => {
+		return new Promise((resolve, reject) => {
+			const pathOpt = path.resolve(opts.vuePath);
+			const scriptString = cleanFile(fs.readFileSync(pathOpt, 'utf-8'));
+			const currPath = path.join(pathOpt.replace(/\/(\w\d?[-_\s]?)+\.vue/ig, ''), opts.outputDir, `${opts.testName}.js`);
+			let bundleScript = '';
+
+			if (!scriptString) {
+				reject(new Error('No Vue file given'));
+			}
+			if (scriptString.includes('.vue')) {
+				bundleScript = importComp(scriptString);
+			} else {
+				bundleScript = scriptString;
 			}
 
-			return {
-				moduleName,
-				moduleValue
-			};
-		}
+			fs.writeFileSync(currPath, bundleScript);
+			rollup({
+				entry: currPath,
+				external: opts.externals
+			}).then(bundle => {
+				writeBundle(bundle, currPath).then(() => {
+					return resolve(require(currPath));
+				});
 
-		return null;
-	}
+			});
+		});
+	};
 
-	function cleaner(imp) {
-		let cleanDep = '';
-
-		if (imp.includes('import')) {
-			cleanDep = cleanImport(imp);
-		} else if (imp.includes('require')) {
-			cleanDep = cleanRequires(imp);
-		} else {
-			cleanDep = null;
-		}
-
-		return cleanDep;
-	}
-
-	function removeExtraComponents(str) {
-		return str.replace(/components:\s{([^<]+?)},?/gi, '');
-	}
-
-	// Sift through the imports to automatically grab dependencies
-	function getImports() {
-		const importRegex = /([A-Z])+\s\w+\s(from|=)\s(\w|'|")+[('"-\w\W)][^\s;]+/gi;
-		let imports = vueString.match(importRegex);
-		let i = 0;
-		let len = imports.length;
-		let depObj = {};
-		let cleaned = {};
-
-		for (i; i < len; i++) {
-			cleaned = cleaner(imports[i]);
-
-			if (cleaned) {
-				depObj[cleaned.moduleName] = cleaned.moduleValue;
-			}
-		}
-
-		return depObj;
-	}
-
-	// Goes through the script and replaces this with our fake this
-	function fakeThis(str) {
-		return str.replace(/\b(this\.)/g, 'self.');
-	}
-
-	// The function that will finally summon your dark lord of your methods object
-	// Send in any props, or other data as a param that will get set to the functions this scope (fake this)
-	function makeJS(str) {
-		const fakedStr = fakeThis(str);
-		const jsFunc = function(vueObj) {
-			let deps = getImports();
-			let mainStr = removeExtraComponents(fakedStr);
-			let self = vueObj || {};
-			let prop = '';
-
-			for (prop in deps) {
-				global[prop] = require(deps[prop]);
-			}
-			function getThis() {
-				return self;
-			}
-
-			function setThis(arg) {
-				self = arg;
-			}
-
-			function getVueExport() {
-				return eval(`(${mainStr})`);
-			}
-
-			return {
-				getVueExport,
-				setThis,
-				getThis
-			};
-		};
-
-		return jsFunc;
-	}
-
-	return makeJS(script);
+	return vueBox();
 };

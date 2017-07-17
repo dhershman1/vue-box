@@ -1,67 +1,67 @@
-# Vue Box
-Pulls in single Vue component files and allows you to isolate the JS of your vue to perform tests on your functionality, gives you the entire object (it will automatically exclude other components being set/used)
+[![Build Status](https://travis-ci.org/dhershman1/vue-box.svg?branch=master)](https://travis-ci.org/dhershman1/vue-box)
 
-Please report any issues as soon as you can, I am one man and cannot test every need, or situation thank you!
+# Vue Box
+Grabs your vue file, turns it into standing JS and gives you back the object to run your tests against
+
+**Please report any issues as soon as you can, I am one man and cannot test every need, or situation thank you! Please Feel free to leave suggestions on improvements/methods you'd want to see added. OR feel free to send a PR!**
 
 ### Changelog
-> v1.0.1
-> - Stabilized how the ending bracket could break the process, depending on if you used a semi colon or not
-> - Added in tests now so you can see the module in action and see how it runs in your test files
-> - Added `setThis` method to allow the user to set the this scope later if they want to call their data method
-> - Some more stabilization fixes
+You can find the changelog here:
+https://github.com/dhershman1/vue-box/blob/master/changelog.md
 
+### Params
 
-### Arguments
-Vue Box takes two arguments:
-
-- `vuePath`: `String` - A String pointing to the directory of your vue file
 - `options`: `Object` - An object of options to help Vue Box
 
 ### Options
-- `blacklistNames`: `Array` - An array of Strings to skip over if it is found within your imports
-- `localModuleAlias`: `String` - A string that your local modules use
-- `localPath`: `String` - A string that points to the directory of your local paths
-
 ```js
-const vueBox = require('vue-box');
-const myComponent = vueBox('path/to/directory', {
-	blacklistNames: [], // Default
-	localModuleAlias: '', // Default
-	localPath: '' // Default
-});
+const defaults = {
+	vuePath: '/', // The path to the vue file your currently testing
+	componentPath: '/', // the path to where your components live
+	testName: 'default', // Name of the current test (optional)
+	outputDir: 'tests', // Specify where you want the ouput dir to be
+	external: [], // Array of external modules E.G underscore
+	globals: {} // An object of globals E.G { underscore: '_' }
+};
 ```
 
 ### How To
-Simply pass in the string of the .vue file and the module will do the rest
+Pass in a set of options to vueBox and go from there
 
-The module will automatically grab dependencies your component needs based on its imports/requires, you can set blacklisted names in order to skip certain imports (such as other components)
+For single vue files (not importing other vue components)
 
 ```js
 const vueBox = require('vue-box');
-const myComponent = vueBox('path/to/directory', options);
-// You can pass in an object to this function to set data to the fake this
-const instance = myComponent({
-	myData: 'Test'
+vueBox({
+	vuePath: `${__dirname}/../index.vue`,
+	outputDir: 'tests',
+	testName: 'Single-Component',
+	externals: ['underscore'],
+	globals: {
+		underscore: '_'
+	}
+}).then(vm => {
+	// You can now access your vue object here
 });
 ```
 
-### Methods
+For a vue file that is importing other vue components
 
-#### getThis()
-Returns the vue this scope current to the instance, useful for checking or faking data needed in methods.
 ```js
-const vueThis = instance.getThis();
-```
-
-#### setThis()
-Sets the this scope of your vue object to whatever argument you send. (you can also just send an object as shown above)
-```js
-// We can call the data function inside our vue object to get your data back that you set there
-instance.setThis(instance.getVueExport().data());
-```
-
-#### getVueExport()
-Returns the main export object that is set in the vue component
-```js
-const vueExport = instance.getVueExport();
+const vueBox = require('vue-box');
+vueBox({
+	vuePath: `${__dirname}/../index.vue`,
+	outputDir: 'tests',
+	testName: 'Import-Component',
+	componentPath: `${__dirname}/../../`, // Note a path that points to the general components directory
+	externals: ['underscore'], // General rollup settings
+	globals: { // More general rollup settings
+		underscore: '_'
+	}
+}).then(vm => {
+	// You can now access your vue object here
+	// Your main vue file will be under default so:
+	vm.default.data() // etc...
+	// You can also look at other components if you need too through the vm variabel
+});
 ```
