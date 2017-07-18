@@ -2,8 +2,16 @@ const path = require('path');
 const fs = require('fs');
 const rollup = require('rollup').rollup;
 
-module.exports = (options) => {
+const vueBoxEvent = (eName, eData) => {
+	return {
+		name: eName,
+		data: eData
+	};
+};
+
+const vueBox = (options) => {
 	const defaults = {
+		props: {},
 		vuePath: '/',
 		componentPath: '/',
 		testName: 'default',
@@ -21,13 +29,18 @@ module.exports = (options) => {
 	};
 
 	const writeBundle = (bundle, currPath) => {
-		return new Promise((resolve) => {
-			resolve(bundle.write({
-				dest: currPath,
-				format: 'cjs',
-				moduleName: opts.testName.replace(/\W\s/g, ''),
-				globals: opts.globals
-			}));
+		return new Promise((resolve, reject) => {
+			if (bundle && currPath) {
+				return resolve(bundle.write({
+					dest: currPath,
+					format: 'cjs',
+					exports: 'named',
+					moduleName: opts.testName.replace(/\W\s/g, ''),
+					globals: opts.globals
+				}));
+			}
+
+			return reject(new Error('No Bundle or Path provided'));
 		});
 	};
 
@@ -66,7 +79,45 @@ module.exports = (options) => {
 		return fullScript;
 	};
 
-	const vueBox = () => {
+	const applyScopedData = (scope, {props, data}) => {
+		let propData = '';
+		let val = '';
+
+		for (propData in props) {
+			scope[propData] = props[propData];
+		}
+		for (val in data) {
+			scope[val] = data[val];
+		}
+
+		return scope;
+	};
+
+	const setupMethods = (vm) => {
+		vm.methods = applyScopedData(vm.methods, vm);
+		vm.methods.$emit = vueBoxEvent;
+		vm.methods.event = {};
+
+		return vm.methods;
+	};
+
+	const executeData = vm => {
+		vm.data = vm.data();
+		vm.props = opts.props;
+		vm.computed = applyScopedData(vm.computed, vm);
+		vm.methods = setupMethods(vm);
+		let prop = '';
+
+		for (prop in vm.computed) {
+			if (typeof vm.computed[prop] === 'function') {
+				vm.methods[prop] = vm.computed[prop]();
+			}
+		}
+
+		return vm;
+	};
+
+	const main = () => {
 		return new Promise((resolve, reject) => {
 			const pathOpt = path.resolve(opts.vuePath);
 			const scriptString = cleanFile(fs.readFileSync(pathOpt, 'utf-8'));
@@ -88,12 +139,27 @@ module.exports = (options) => {
 				external: opts.externals
 			}).then(bundle => {
 				writeBundle(bundle, currPath).then(() => {
-					return resolve(require(currPath));
+					let vue = require(currPath);
+
+					if (vue.default) {
+						let prop = '';
+
+						for (prop in vue.default.components) {
+							vue.default.components[prop] = executeData(vue.default.components[prop]);
+						}
+						vue = executeData(vue.default);
+					} else {
+						vue = executeData(vue);
+					}
+
+					return resolve(vue);
 				});
 
 			});
 		});
 	};
 
-	return vueBox();
+	return main();
 };
+
+module.exports = vueBox;

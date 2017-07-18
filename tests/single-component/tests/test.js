@@ -19,7 +19,7 @@ vueBox({
 
 	test('Does our This exist', t => {
 		t.ok(vm, 'This returns OK');
-		t.equal(vm.data().aTest, 'CoolData', 'This scope has our test value in it');
+		t.equal(vm.data.aTest, 'CoolData', 'This scope has our test value in it');
 		t.end();
 	});
 

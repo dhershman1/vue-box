@@ -8,6 +8,9 @@
 	import testComponent from '../single-component/index.vue';
 
 	export default {
+		components: {
+			testComponent
+		},
 		data() {
 			return {
 				aTest: 'CoolData'
@@ -20,9 +23,6 @@
 			changeComputed() {
 				this.aTest = 'Chicken';
 				return this.aTest;
-			},
-			testedImport() {
-				return testComponent.data();
 			}
 		},
 		methods: {

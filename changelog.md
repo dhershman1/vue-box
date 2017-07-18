@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.3.0
+
+> - Support for `$emit` events added
+>   - Currently working on a capture for events
+> - Better component support
+> - Scoping values locally so they can be picked up by `this`
+> - Data is now already in place and ready to be used when the promise resolves
+> - You can see data changing with methods or computed values in their scope (see readme for more info)
+
+## v1.2.1
+
+> - Removed an unused dependency
+> - Version bump
+
 ## v1.2.0
 
 > - Can now support importing of components into your main vue file
