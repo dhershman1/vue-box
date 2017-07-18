@@ -55,6 +55,9 @@ var singlecomponent =  {
 	var testComponent = singlecomponent;
 
 	var ImportComponent = {
+		components: {
+			testComponent
+		},
 		data() {
 			return {
 				aTest: 'CoolData'
@@ -67,9 +70,6 @@ var singlecomponent =  {
 			changeComputed() {
 				this.aTest = 'Chicken';
 				return this.aTest;
-			},
-			testedImport() {
-				return testComponent.data();
 			}
 		},
 		methods: {
