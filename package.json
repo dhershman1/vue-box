@@ -6,7 +6,7 @@
   "scripts": {
     "test:multi": "tape tests/component-import/tests/test.js | tap-spec",
     "test:single": "tape tests/single-component/tests/test.js | tap-spec",
-    "test": "tape 'tests/**/test.js' | tap-spec"
+    "test": "npm run test:multi && npm run test:single"
   },
   "repository": {
     "type": "git",
